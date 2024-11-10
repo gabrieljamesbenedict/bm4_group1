@@ -1,9 +1,24 @@
 #######################
-# Import libraries
+# Importing libraries
 import streamlit as st
-import pandas as pd
-import altair as alt
+import matplotlib.pyplot as plt
 import plotly.express as px
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import altair as alt
+from wordcloud import WordCloud
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 
 # Importing Models
 import joblib
@@ -73,6 +88,42 @@ df = pd.read_csv("data/retail_sales_dataset.csv")
 
 #######################
 
+
+######################
+# Plots 
+def pie_chart(column, width, height, key):
+
+    # Generate a pie chart
+    pie_chart = px.pie(df, names=df[column].unique(), values=df[column].value_counts().values)
+
+    # Adjust the height and width
+    pie_chart.update_layout(
+        width=width,  # Set the width
+        height=height  # Set the height
+    )
+    st.plotly_chart(pie_chart, use_container_width=True,  key=f"pie_chart_{key}")
+
+def bar_plot(df, column, width, height, key):
+    # Generate value counts as a DataFrame for plotting
+    data = df[column].value_counts().reset_index()
+    data.columns = [column, 'count']  # Rename for easy plotting
+
+    # Create a bar plot using Plotly Express
+    bar_plot = px.bar(data, x=column, y='count')
+
+    # Update layout
+    bar_plot.update_layout(
+        width=width,
+        height=height
+    )
+
+    # Display the plot in Streamlit
+    st.plotly_chart(bar_plot, use_container_width=True, key=f"countplot_{key}")
+
+
+######################
+
+
 ######################
 # Importing models
 #supervised_model_filename = joblib.load('assests/models/sales_prediction_model.joblib')
@@ -91,8 +142,8 @@ if st.session_state.page_selection == "about":
     st.header (" 𝓲 About")
     st.markdown(""" 
 
-    The retails sales dataset focuses on simulating a dynamic retail environment such that it will have an in-depth analysis of customers behavior and its essential attributes such as customer’s interaction and retail operations. Data-Driven Retail Insights: Leveraging Machine Learning for Customer Understanding and Business Optimization
-
+    The Retail Sales Dataset is a synthetic dataset that simulates a realistic retail environment, which enables a deep dive into sales patterns and customer profiles. The dataset was originally made using the Numpy library, published in Kaggle, and owned by Mohammad Talib under a Public Domain license. 
+                
     #### Pages
     1. `Dataset` - Contains the description of the dataset used in this project.
     2. `EDA` - Exploratory Data Analysis of the Retails dataset. Highlighting the three product category (e.g., Beauty, Clothing, Electronics) for targeted marketing campaigns and customer segmentation.
@@ -157,25 +208,41 @@ elif st.session_state.page_selection == "eda":
     st.header("📈 Exploratory Data Analysis (EDA)")
 
 
-    col = st.columns((1.5, 4.5, 2), gap='medium')
+    col = st.columns((3, 3, 3), gap='medium')
 
     # Your content for the EDA page goes here
 
     with col[0]:
-        st.markdown('#### Graphs Column 1')
-
-
+           with st.expander('Legend', expanded=True):
+            st.write('''
+                - Data: [Retails Dataset](https://www.kaggle.com/datasets/arshid/iris-flower-dataset).
+                - :violet[**Pie Chart**]: Distribution of the Product Category.
+                - :violet[**Bar Plot**]: Customer's Demographic mainly Gender and Age
+                ''')
+        
+    st.markdown('#### Product Categroy Distribution')
+    pie_chart("Product Category", 500, 350, 1)
+            
     with col[1]:
-        st.markdown('#### Graphs Column 2')
+        st.markdown('#### Gender Distribution')
+        bar_plot(df, "Gender", 500, 300, 2)
+
         
     with col[2]:
-        st.markdown('#### Graphs Column 3')
+        st.markdown('#### Age Distribution')
+        bar_plot(df, "Age", 500, 300, 3)
 
 # Data Cleaning Page
 elif st.session_state.page_selection == "data_cleaning":
     st.header("🧼 Data Cleaning and Data Pre-processing")
 
-    # Your content for the DATA CLEANING / PREPROCESSING page goes here
+    st.dataframe(df.head(), use_container_width=True, hide_index=True)
+
+    st.markdown("""
+
+    bibibibi
+         
+    """)
 
 # Machine Learning Page
 elif st.session_state.page_selection == "machine_learning":
