@@ -8,7 +8,7 @@ import plotly.express as px
 #######################
 # Page configuration
 st.set_page_config(
-    page_title="Dashboard Template", # Replace this with your Project's Title
+    page_title="Retails Dataset", # Replace this with your Project's Title
     page_icon="assets/icon.png", # You may replace this with a custom icon or emoji related to your project
     layout="wide",
     initial_sidebar_state="expanded")
@@ -29,7 +29,7 @@ def set_page_selection(page):
 with st.sidebar:
 
     # Sidebar Title (Change this with your project's title)
-    st.title('Dashboard Template')
+    st.title('Retails Dataset')
 
     # Page Button Navigation
     st.subheader("Pages")
@@ -57,13 +57,13 @@ with st.sidebar:
 
     # Project Members
     st.subheader("Members")
-    st.markdown("1. Elon Musk\n2. Jeff Bezos\n3. Sam Altman\n4. Mark Zuckerberg")
+    st.markdown("1. Jelyka Dizon\n2. Erika Mariano\n3. Gabriel Loslos\n4. Sophia Olandag\n5. Thomas Kaden Zarta")
 
 #######################
 # Data
 
 # Load data
-dataset = pd.read_csv("data/IRIS.csv")
+dataset = pd.read_csv("data/retail_sales_dataset.csv")
 
 #######################
 
@@ -71,15 +71,25 @@ dataset = pd.read_csv("data/IRIS.csv")
 
 # About Page
 if st.session_state.page_selection == "about":
-    st.header("ℹ️ About")
+    st.header (" 𝓲 About")
+    st.markdown(""" 
 
-    # Your content for the ABOUT page goes here
+    The retails sales dataset focuses on simulating a dynamic retail environment such that it will have an in-depth analysis of customers behavior and its essential attributes such as customer’s interaction and retail operations. Data-Driven Retail Insights: Leveraging Machine Learning for Customer Understanding and Business Optimization
 
+    #### Pages
+    1. `Dataset` - Contains the description of the dataset used in this project.
+    2. `EDA` - Exploratory Data Analysis of the Retails dataset. Highlighting the three product category (e.g., Beauty, Clothing, Electronics) for targeted marketing campaigns and customer segmentation. Includes graphs such as 
+    3. `Data Cleaning / Pre-processing` - Data cleaning and pre-processing steps such as encoding the species column and splitting the dataset into training and testing sets. Includes graphs such as Pie Chart, Bar Chart, Scatter Plot, Box Plot, Bar Plot, Histogram, Heatmap, Violin Plot, and Line Plot. 
+    4. `Machine Learning` - Training one supervised model, the Random Forest Regressor, and training one unsupervised model, the KMeans clustering. This includes Supervised and Unsupervised Model evaluation, feature importance and segmentation.
+    5. `Prediction` - It predicts on the Total Amount based on other features, Product Category based on customer's demographic and their transaction details, and classifying customers by using customer segmentation using the two trained models.
+    6. `Conclusion` - Summary of the insights and observations from the EDA and model training.
+
+    """)
 # Dataset Page
 elif st.session_state.page_selection == "dataset":
     st.header("📊 Dataset")
 
-    st.write("IRIS Flower Dataset")
+    st.write("Retails Dataset")
     st.write("")
 
     # Your content for your DATASET page goes here
@@ -125,4 +135,35 @@ elif st.session_state.page_selection == "prediction":
 elif st.session_state.page_selection == "conclusion":
     st.header("📝 Conclusion")
 
-    # Your content for the CONCLUSION page goes here
+    st.markdown("""
+The analysis of the graphs allows for the deduction of the following important conclusions 📊:
+
+
+
+1.   **Customer Spending Patterns:** Overall spending behavior cannot be explained by a single dominant component, although there are notable differences in purchasing habits depending on gender and product category.
+
+2.   **Product Category Preference:** Beauty items are bought by customers of all ages, but younger audiences are more interested in clothing and electronics.
+
+3.   **Age and Spending:** Spending habits are not greatly influenced by age alone, suggesting that lifestyle, income, or personal preferences are more important considerations.
+
+4.   **Gender and Spending:** Spending habits are somewhat influenced by gender; differences are seen in the cosmetics sector but not in clothing or electronics.
+
+
+Overall, these results point to a complicated interaction between variables affecting consumer spending patterns. Deeper understanding of these trends may be possible with additional research, such as consumer segmentation or in-depth product pricing study.
+
+                
+Moreover, the analysis's supervised and unsupervised models offer insightful information about consumer behavior and industry trends in retails dataset.
+
+**Supervised Model:**
+* **Sales Prediction:** Based on the model, it accurately forecasts future sales and businesses are able to estimate demand and make appropriate plans.
+* **Customer Segmentation:** By dividing up the client base into discrete groups, the concept makes it possible to run focused advertising campaigns and provide individualized customer service.
+* **Product Category Prediction:** The model helps with inventory management and product recommendations by correctly predicting product categories
+
+
+**Unsupervised Model:**
+* **Customer Segmentation:** Targeted marketing and product recommendations are made possible by the clustering analysis, which separates different customer segments according to demographics and purchasing trends.
+
+
+Businesses can learn a lot about market trends and consumer behavior by using both supervised and unstructured models. This allows them to make data-driven decisions for better business performance, manage inventory, improve customer experience, and personalize marketing.
+
+""")
