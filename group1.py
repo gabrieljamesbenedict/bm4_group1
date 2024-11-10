@@ -5,6 +5,12 @@ import pandas as pd
 import altair as alt
 import plotly.express as px
 
+# Importing Models
+import joblib
+
+# Images
+from PIL import Image
+
 #######################
 # Page configuration
 st.set_page_config(
@@ -63,9 +69,20 @@ with st.sidebar:
 # Data
 
 # Load data
-dataset = pd.read_csv("data/retail_sales_dataset.csv")
+df = pd.read_csv("data/retail_sales_dataset.csv")
 
 #######################
+
+######################
+# Importing models
+#supervised_model_filename = joblib.load('assests/models/sales_prediction_model.joblib')
+#unsupervised_model_filename = joblib.load('assests/models/clustering_model.joblib')
+#rf_classifier_filename = joblib.load('assests/models/random_forest_classifier.joblib')
+
+## not sure with the features and the list for the mean time
+## features = ['Age', 'Gender_Female', 'Gender_Male', 'AvgTransactionValue', 'ProductCategory_Encoded']
+## species_list = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+######################
 
 # Pages
 
@@ -85,14 +102,55 @@ if st.session_state.page_selection == "about":
     6. `Conclusion` - Summary of the insights and observations from the EDA and model training.
 
     """)
+
+    ## might change the description of the about page - jelay
+
 # Dataset Page
 elif st.session_state.page_selection == "dataset":
     st.header("📊 Dataset")
 
     st.write("Retails Dataset")
-    st.write("")
+    st.markdown("""
 
-    # Your content for your DATASET page goes here
+  The retails sales dataset focuses on simulating a dynamic retail environment such that it will have an in-depth analysis of customers behavior and its essential attributes such as customer’s interaction and retail operations. Data-Driven Retail Insights: Leveraging Machine Learning for Customer Understanding and Business Optimization
+
+    **Content**  
+    The dataset has **1000** rows containing **9 columns** regarding the customer's demographic and the Product Category (e.g., Beauty, Clothing and Electronics)
+    `Link:` https://www.kaggle.com/datasets/mohammadtalib786/retail-sales-dataset/data?fbclid=IwZXh0bgNhZW0CMTEAAR1-Nw3xogR5b50rX6nWWaoTN8jNz8XbwIQIrywInvMUSOgI3dF7LvLyJpY_aem_pQqSow3d9e9SsGKjQuz6Fw           
+                
+    """)
+
+    col_retail = st.columns((3, 3, 3), gap='medium')
+
+    # Define the new dimensions (width, height)
+    resize_dimensions = (500, 300)  # Example dimensions, adjust as needed
+
+    with col_retail[0]:
+        beauty_image = Image.open('assets/retails_picture/Beauty.jpg')
+        beauty_image = beauty_image.resize(resize_dimensions)
+        st.image(beauty_image, caption='Beauty Retail Store')
+
+    with col_retail[1]:
+        clothing_image = Image.open('assets/retails_picture/Clothing.jpg')
+        clothing_image = clothing_image.resize(resize_dimensions)
+        st.image(clothing_image, caption='Clothing Retail Store')
+
+    with col_retail[2]:
+
+        electronics_image = Image.open('assets/retails_picture/Electronics.jpg')
+        virginica_image = electronics_image.resize(resize_dimensions)
+        st.image(electronics_image, caption='Electronic Retail Store')
+        
+    # Display the dataset
+    st.subheader("Dataset displayed as a Data Frame")
+    st.dataframe(df, use_container_width=True, hide_index=True)
+
+    # Describe Statistics
+    st.subheader("Descriptive Statistics")
+    st.dataframe(df.describe(), use_container_width=True)
+    ## include the description - jelay
+
+
 
 # EDA Page
 elif st.session_state.page_selection == "eda":
