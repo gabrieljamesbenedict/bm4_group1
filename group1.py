@@ -78,7 +78,7 @@ if st.session_state.page_selection == "about":
 
     #### Pages
     1. `Dataset` - Contains the description of the dataset used in this project.
-    2. `EDA` - Exploratory Data Analysis of the Retails dataset. Highlighting the three product category (e.g., Beauty, Clothing, Electronics) for targeted marketing campaigns and customer segmentation. Includes graphs such as 
+    2. `EDA` - Exploratory Data Analysis of the Retails dataset. Highlighting the three product category (e.g., Beauty, Clothing, Electronics) for targeted marketing campaigns and customer segmentation.
     3. `Data Cleaning / Pre-processing` - Data cleaning and pre-processing steps such as encoding the species column and splitting the dataset into training and testing sets. Includes graphs such as Pie Chart, Bar Chart, Scatter Plot, Box Plot, Bar Plot, Histogram, Heatmap, Violin Plot, and Line Plot. 
     4. `Machine Learning` - Training one supervised model, the Random Forest Regressor, and training one unsupervised model, the KMeans clustering. This includes Supervised and Unsupervised Model evaluation, feature importance and segmentation.
     5. `Prediction` - It predicts on the Total Amount based on other features, Product Category based on customer's demographic and their transaction details, and classifying customers by using customer segmentation using the two trained models.
