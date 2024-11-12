@@ -11,6 +11,8 @@ from wordcloud import WordCloud
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
@@ -240,27 +242,216 @@ elif st.session_state.page_selection == "data_cleaning":
 
     st.markdown("""
 
-    bibibibi
+    Description
          
     """)
 
+    st.subheader ("Data Cleaning")
+    
+    # Checking for missing values
+    missing_values = df.isnull().sum()
+
+    # Display the missing values in Streamlit
+    st.write("Displaying missing values in the dataset:")
+    st.dataframe(missing_values, use_container_width=True, hide_index=True)
+
+    st.markdown("""
+
+    Description
+         
+    """)
+
+
+    st.subheader("Data Pre-Processing")
+
     encoder = LabelEncoder()
-    df['Product Category Encoded'] = encoder.fit_transform(df["Product Category"])
+
+    df['product_category_encoded'] = encoder.fit_transform(df['Product Category'])
+
     st.dataframe(df.head(), use_container_width=True, hide_index=True)
 
     st.markdown("""
-                
-    hahahaha
-                
+
+    [Description]
+         
     """)
+
+
+    # Predicting the “Total Amount” that is based on the other features
+    xdata = df[['product_category_encoded', 'Quantity', 'Price per Unit']]
+    ydata = df['Total Amount']
+
+    st.dataframe(df.head(), use_container_width=True, hide_index=True)
+
+    st.markdown("""
+
+    [Description]
+         
+    """)
+
+    ######################################################################################
+
+    # Classifying Customer segments, using “Age”, “Gender”, “Total Amount”, and “Product Category”, for targeted marketing campaigns
+    # Default segment
+    df['Customer Segment'] = 'Regular'
+
+    # 1. Average Transaction Value
+    df['AvgTransactionValue'] = df['Total Amount'] / df.groupby('Customer ID')['Transaction ID'].transform('nunique')
+
+    # Encoding the Product Category
+    encoder = LabelEncoder()
+    df['product_category_encoded'] = encoder.fit_transform(df['Product Category'])
+
+    # Adding one-hot encoding for Product Category
+    product_category_dummies = pd.get_dummies(df['Product Category'], prefix='ProductCategory')
+    df = pd.concat([df, product_category_dummies], axis=1)
+
+    # Adding one-hot encoding for Gender, if it exists
+    if 'Gender' in df.columns:
+        gender_dummies = pd.get_dummies(df['Gender'], prefix='Gender')
+        df = pd.concat([df, gender_dummies], axis=1)
+
+    # Rule 1: High-Value Customers (using AvgTransactionValue)
+    df.loc[df['AvgTransactionValue'] > 150, 'Customer Segment'] = 'High Value'  # Adjusted threshold
+
+    # Rule 2: Loyal Customers (based on the number of unique transactions)
+    loyal_customers = df.groupby('Customer ID')['Transaction ID'].nunique()
+    loyal_customer_ids = loyal_customers[loyal_customers > 8].index
+    df.loc[df['Customer ID'].isin(loyal_customer_ids), 'Customer Segment'] = 'Loyal'
+
+    # Mapping Product Category and their encoded equivalent 
     
     unique_product = df['Product Category'].unique()
-    unique_product_encoded = df['Product Category Encoded'].unique()
+    unique_product_encoded = df['product_category_encoded'].unique()
 
-    product_mapping_df = pd.DataFrame({'Product Category': unique_product, 'Product Category Encoded': unique_product_encoded})
+    # Displaying the Dataframe
+    product_mapping_df = pd.DataFrame({'Product Category': unique_product, 'product_category_encoded': unique_product_encoded})
 
     st.dataframe(product_mapping_df, use_container_width=True, hide_index=True)
 
+
+    # Select features and target variable
+    features = ['Age', 'Gender_Female', 'Gender_Male', 'AvgTransactionValue',
+            'product_category_encoded'] + list(product_category_dummies.columns)
+
+    X = df[features]
+    y = df['Customer Segment']
+
+    st.code("""
+
+    # Select features and target variable
+    features = ['Age', 'Gender_Female', 'Gender_Male', 'AvgTransactionValue',
+            'product_category_encoded'] + list(product_category_dummies.columns)
+            # Include one-hot encoded categories
+
+    X = df[features]
+    y = df['Customer Segment']
+    """)
+
+    st.markdown("""
+
+    [Description]
+         
+    """)
+    ######################################################################################
+
+    # Predicting the “Product Category” that is based on the customer’s demographic and their transaction details
+    # Handle missing values by forward filling
+    df.ffill(inplace=True)  # Forward fill for missing values
+
+    # Convert 'Date' to ordinal format
+    df['Date'] = pd.to_datetime(df['Date']).apply(lambda date: date.toordinal())
+
+    # Split data into features (X) and target variable (y)
+    X = df.drop(['Product Category', 'Customer ID', 'Transaction ID', 'Gender', 'Customer Segment'], axis=1, errors='ignore')
+    y = df['Product Category']
+
+    st.code("""
+     # Split data into features (X) and target variable (y)
+    X = df.drop(['Product Category', 'Customer ID', 'Transaction ID', 'Gender', 'Customer Segment'], axis=1, errors='ignore')
+    y = df['Product Category']
+    """)
+
+    st.markdown("""
+
+    [Description]
+         
+    """)
+
+    # Identify numerical features for scaling
+    numerical_features = X.select_dtypes(include=['number']).columns
+    scaler = StandardScaler()
+    X[numerical_features] = scaler.fit_transform(X[numerical_features])
+
+    # Display the DataFrame in Streamlit
+    st.dataframe(df.head(), use_container_width=True, hide_index=True)
+
+    ######################################################################################
+
+    # To use the 'Date' feature to predict sales patterns over time
+    # Convert 'Date' to datetime format
+    df['Date'] = pd.to_datetime(df['Date'])
+
+    # Calculate total sales for each entry
+    df['Total Sales'] = df['Quantity'] * df['Price per Unit']
+
+    # Group by 'Date' to get daily total sales
+    daily_sales = df.groupby('Date')['Total Sales'].sum().reset_index()
+
+    # Display daily sales in Streamlit
+    st.write("Daily Total Sales:")
+    st.dataframe(daily_sales)
+
+    # Add the daily sales back to the main DataFrame if needed
+    df = df.merge(daily_sales, on='Date', suffixes=('', '_Daily'))
+
+    # Target variable: Future Sales (shifted 'Total Sales' on daily basis)
+    daily_sales['Future_Sales'] = daily_sales['Total Sales'].shift(-1)
+    daily_sales.dropna(inplace=True)  # Drop last row with no future sales value
+
+    # Display updated DataFrame with 'Future_Sales'
+    st.write("Daily Sales with 'Future_Sales' column added:")
+    st.dataframe(daily_sales)
+
+    # Prepare for modeling by separating features (X) and target variable (y)
+    X = daily_sales[['Date', 'Total Sales']]
+    y = daily_sales['Future_Sales']
+
+    # Convert 'Date' to ordinal for modeling
+    X['Date'] = X['Date'].apply(lambda date: date.toordinal())
+
+    st.write("Features (X):")
+    st.dataframe(X, use_container_width=True, hide_index=True)
+    st.write("Target variable (y): Future Sales")
+    st.dataframe(y, use_container_width=True, hide_index=True)
+
+    ######################################################################################
+
+    st.subheader("Train-Test Split")
+    # Split the dataset into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    # Drop rows with NaN values in y_train and y_test
+
+    st.code("""
+
+    # Split the dataset into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+                
+    """)
+
+    st.subheader("X_train")
+    st.dataframe(X_train, use_container_width=True, hide_index=True)
+
+    st.subheader("X_test")
+    st.dataframe(X_test, use_container_width=True, hide_index=True)
+
+    st.subheader("y_train")
+    st.dataframe(y_train, use_container_width=True, hide_index=True)
+
+    st.subheader("y_test")
+    st.dataframe(y_test, use_container_width=True, hide_index=True)
+
+    st.markdown("[Description]")
     
 # Machine Learning Page
 elif st.session_state.page_selection == "machine_learning":
