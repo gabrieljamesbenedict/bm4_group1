@@ -244,6 +244,24 @@ elif st.session_state.page_selection == "data_cleaning":
          
     """)
 
+    encoder = LabelEncoder()
+    df['Product Category Encoded'] = encoder.fit_transform(df["Product Category"])
+    st.dataframe(df.head(), use_container_width=True, hide_index=True)
+
+    st.markdown("""
+                
+    hahahaha
+                
+    """)
+    
+    unique_product = df['Product Category'].unique()
+    unique_product_encoded = df['Product Category Encoded'].unique()
+
+    product_mapping_df = pd.DataFrame({'Product Category': unique_product, 'Product Category Encoded': unique_product_encoded})
+
+    st.dataframe(product_mapping_df, use_container_width=True, hide_index=True)
+
+    
 # Machine Learning Page
 elif st.session_state.page_selection == "machine_learning":
     st.header("🤖 Machine Learning")
