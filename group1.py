@@ -400,7 +400,7 @@ elif st.session_state.page_selection == "data_cleaning":
 
     # Display daily sales in Streamlit
     st.write("Daily Total Sales:")
-    st.dataframe(daily_sales)
+    st.dataframe(daily_sales, use_container_width=True, hide_index=True)
 
     # Add the daily sales back to the main DataFrame if needed
     df = df.merge(daily_sales, on='Date', suffixes=('', '_Daily'))
@@ -411,7 +411,7 @@ elif st.session_state.page_selection == "data_cleaning":
 
     # Display updated DataFrame with 'Future_Sales'
     st.write("Daily Sales with 'Future_Sales' column added:")
-    st.dataframe(daily_sales)
+    st.dataframe(daily_sales, use_container_width=True, hide_index=True)
 
     # Prepare for modeling by separating features (X) and target variable (y)
     X = daily_sales[['Date', 'Total Sales']]
@@ -426,8 +426,66 @@ elif st.session_state.page_selection == "data_cleaning":
     st.dataframe(y, use_container_width=True, hide_index=True)
 
     ######################################################################################
+    # In order to segment customers according to their demographics and purchase patterns. Uses “Age”, “Total Amount spent”, “Frequency of purchases”, and “Product Category” preferences.
+    # Feature engineering: Calculate 'Total Sales' for each entry    
+    df['Total Sales'] = df['Quantity'] * df['Price per Unit']
+
+    # Encode 'Gender' using LabelEncoder
+    label_encoder = LabelEncoder()
+    df['Gender'] = label_encoder.fit_transform(df['Gender'])  # Male=0, Female=1
+
+    # Select features for segmentation: demographics and purchase patterns
+    features = df[['Age', 'Gender', 'Quantity', 'Total Sales']]
+
+    # Standardize features using numpy (alternative to StandardScaler)
+    scaled_features = (features - features.mean()) / features.std()
+
+    # Display the processed DataFrame in Streamlit
+    st.write("Data after Feature Engineering and Encoding:")
+    st.dataframe(df)
+
+    # Finding the optimal number of clusters using the Elbow Method
+    sse = []
+    K_range = range(1, 11)
+    for k in K_range:
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans.fit(scaled_features)
+        sse.append(kmeans.inertia_)
+
+
+
+    st.markdown ("""
+    [Description]
+    """)
+
+    # Identify high-, medium-, and low-spending customer clusters based on their age and money spent.
+    # Aggregate 'Total Amount' by 'Customer ID' to find overall spending per customer
+    customer_data = df.groupby('Customer ID').agg({
+        'Age': 'first',  # Assuming age remains constant for each customer
+        'Total Amount': 'sum'  # Total amount spent per customer
+    }).reset_index()
+
+    # Rename 'Total Amount' to 'CLV'
+    customer_data.rename(columns={'Total Amount': 'CLV'}, inplace=True)
+
+    # Scale features
+    scaler = StandardScaler()
+    customer_data[['Age', 'CLV']] = scaler.fit_transform(customer_data[['Age', 'CLV']])
+
+    # Perform KMeans clustering to segment customers into high, medium, and low-value groups
+    kmeans = KMeans(n_clusters=3, random_state=42)
+    customer_data['Cluster'] = kmeans.fit_predict(customer_data[['Age', 'CLV']])
+
+    # Map cluster labels to high, medium, and low CLV based on cluster centroids
+    cluster_centers = kmeans.cluster_centers_
+    cluster_labels = ['Low CLV', 'Medium CLV', 'High CLV']
+    sorted_clusters = sorted(range(len(cluster_centers)), key=lambda k: cluster_centers[k][1])  # Sort by CLV centroid
+    customer_data['CLV Segment'] = customer_data['Cluster'].map({sorted_clusters[0]: 'Low CLV',
+                                                                sorted_clusters[1]: 'Medium CLV',
+                                                                sorted_clusters[2]: 'High CLV'})
 
     st.subheader("Train-Test Split")
+    
     # Split the dataset into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     # Drop rows with NaN values in y_train and y_test
@@ -438,6 +496,9 @@ elif st.session_state.page_selection == "data_cleaning":
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
                 
     """)
+
+    # Finding the optimal number of clusters using the Elbow Method [Unsupervised Model]
+
 
     st.subheader("X_train")
     st.dataframe(X_train, use_container_width=True, hide_index=True)
@@ -453,6 +514,28 @@ elif st.session_state.page_selection == "data_cleaning":
 
     st.markdown("[Description]")
     
+    st.subheader ("Visualization for Unsupervised Model")
+
+    # Plot the Elbow Method
+    st.write("Elbow Method for Optimal K")
+    plt.figure(figsize=(8, 6))
+    plt.plot(K_range, sse, marker='o')
+    plt.xlabel("Number of Clusters (K)")
+    plt.ylabel("Sum of Squared Distances (SSE)")
+    plt.title("Elbow Method to Determine Optimal K")
+    st.pyplot(plt)
+
+    # Visualize the clusters
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=customer_data, x='Age', y='CLV', hue='CLV Segment', palette='coolwarm', s=100)
+    plt.title('Customer Segmentation Based on CLV and Age')
+    plt.xlabel('Age (Standardized)')
+    plt.ylabel('Customer Lifetime Value (Standardized)')
+    plt.legend(title='CLV Segment')
+    st.pyplot(plt)
+
+
+
 # Machine Learning Page
 elif st.session_state.page_selection == "machine_learning":
     st.header("🤖 Machine Learning")
