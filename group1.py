@@ -158,15 +158,18 @@ if st.session_state.page_selection == "about":
 
     ## might change the description of the about page - jelay
 
-# Dataset Page
+################################################################
+#                         Dataset Page
+################################################################
+
 elif st.session_state.page_selection == "dataset":
     st.header("📊 Dataset")
 
-    st.write("Retails Dataset")
+    st.write("Retail Sales Dataset")
     st.markdown("""
 
-  The retails sales dataset focuses on simulating a dynamic retail environment such that it will have an in-depth analysis of customers behavior and its essential attributes such as customer’s interaction and retail operations. Data-Driven Retail Insights: Leveraging Machine Learning for Customer Understanding and Business Optimization
-
+  The Retail Sales Dataset is a synthetic dataset that simulates a realistic retail environment, which enables a deep dive into sales patterns and customer profiles. The dataset was originally made using the Numpy library, published in Kaggle, and owned by Mohammad Talib under a Public Domain license. It provides a realistic exploration of demographics, customer purchasing behaviors, and analysis of sales trends. The dataset portrays a fictional retail environment, focusing on customer interactions and retail operations. Attributes of the dataset includes:  Transaction ID, Date, Customer ID, Gender, Age, Product Category, Quantity, Price per Unit, and Total Amount.
+    
     **Content**  
     The dataset has **1000** rows containing **9 columns** regarding the customer's demographic and the Product Category (e.g., Beauty, Clothing and Electronics)
     `Link:` https://www.kaggle.com/datasets/mohammadtalib786/retail-sales-dataset/data?fbclid=IwZXh0bgNhZW0CMTEAAR1-Nw3xogR5b50rX6nWWaoTN8jNz8XbwIQIrywInvMUSOgI3dF7LvLyJpY_aem_pQqSow3d9e9SsGKjQuz6Fw           
@@ -175,8 +178,8 @@ elif st.session_state.page_selection == "dataset":
 
     col_retail = st.columns((3, 3, 3), gap='medium')
 
-    # Define the new dimensions (width, height)
-    resize_dimensions = (500, 300)  # Example dimensions, adjust as needed
+    # dimensions wxh
+    resize_dimensions = (500, 300)  
 
     with col_retail[0]:
         beauty_image = Image.open('assets/retails_picture/Beauty.jpg')
@@ -201,11 +204,21 @@ elif st.session_state.page_selection == "dataset":
     # Describe Statistics
     st.subheader("Descriptive Statistics")
     st.dataframe(df.describe(), use_container_width=True)
-    ## include the description - jelay
+    ## description
+    st.markdown("""
 
+The results from the descriptive statistics highlight key insights about the dataset. Firstly, the average age is 41.39 years with a standard deviation of 13.68, indicating moderate variation around the mean. The quantity of items purchased averages 2.51 with a standard deviation of 1.13, suggesting that the number of items bought is generally consistent. Moving on to price per unit, the mean is 179.89 with a standard deviation of 189.68, indicating significant variability in pricing. The total amount spent averages 456 with a high standard deviation of 559.99, reflecting substantial variation in transaction totals.
 
+In terms of range, ages span from 18 to 64 years, while the quantity of items ranges from 1 to 4. The price per unit varies widely from 25 to 500, and total amounts range from 25 to 2000. This wide spread in both pricing and total amounts suggests diverse purchasing behaviors among customers.
 
-# EDA Page
+The 25th, 50th, and 75th percentiles show gradual increases across all metrics, highlighting variability and potential trends within the data, useful for further analysis and understanding customer purchasing patterns.
+
+    """)
+
+################################################################
+#                         EDA
+################################################################
+
 elif st.session_state.page_selection == "eda":
     st.header("📈 Exploratory Data Analysis (EDA)")
 
