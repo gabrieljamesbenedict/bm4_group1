@@ -222,32 +222,130 @@ The 25th, 50th, and 75th percentiles show gradual increases across all metrics, 
 elif st.session_state.page_selection == "eda":
     st.header("📈 Exploratory Data Analysis (EDA)")
 
-
-    col = st.columns((3, 3, 3), gap='medium')
-
-    # Your content for the EDA page goes here
-
-    with col[0]:
-           with st.expander('Legend', expanded=True):
-            st.write('''
-                - Data: [Retails Dataset](https://www.kaggle.com/datasets/arshid/iris-flower-dataset).
-                - :violet[**Pie Chart**]: Distribution of the Product Category.
-                - :violet[**Bar Plot**]: Customer's Demographic mainly Gender and Age
-                ''')
+    # Add these visualization functions to your existing plot functions section
+    def create_seaborn_plot(plot_type, data, x=None, y=None, hue=None, title=None, key=None):
+        plt.figure(figsize=(10, 6))
         
-    st.markdown('#### Product Categroy Distribution')
-    pie_chart("Product Category", 500, 350, 1)
-            
-    with col[1]:
-        st.markdown('#### Gender Distribution')
-        bar_plot(df, "Gender", 500, 300, 2)
-
+        if plot_type == 'scatter':
+            sns.scatterplot(data=data, x=x, y=y, hue=hue)
+        elif plot_type == 'box':
+            sns.boxplot(data=data, x=x, y=y)
+        elif plot_type == 'bar':
+            sns.barplot(data=data, x=x, y=y, hue=hue)
+        elif plot_type == 'hist':
+            sns.histplot(data=data, x=x, y=y, bins=30)
+        elif plot_type == 'violin':
+            sns.violinplot(data=data, x=x, y=y, inner='box', palette='Dark2')
+        elif plot_type == 'line':
+            sns.lineplot(data=data, x=x, y=y)
         
-    with col[2]:
-        st.markdown('#### Age Distribution')
-        bar_plot(df, "Age", 500, 300, 3)
+        plt.title(title)
+        plt.xlabel(x)
+        plt.ylabel(y)
+        if hue:
+            plt.legend(title=hue)
+        st.pyplot(plt)
+        plt.close()
 
+     # Create tabs for different analysis categories
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "Basic Distribution Analysis", 
+        "Sales Analysis", 
+        "Product Analysis",
+        "Customer Analysis"
+    ])
+    
+    with tab1:
+        st.subheader("Basic Distributions")
+        
+        # Original visualizations
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown('#### Product Category Distribution')
+            pie_chart("Product Category", 400, 300, 1)
+        with col2:
+            st.markdown('#### Gender Distribution')
+            bar_plot(df, "Gender", 400, 300, 2)
+        with col3:
+            st.markdown('#### Age Distribution')
+            bar_plot(df, "Age", 400, 300, 3)
+    
+    with tab2:
+        st.subheader("Sales Analysis")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("#### Quantity vs. Total Amount")
+            create_seaborn_plot('scatter', df, 'Quantity', 'Total Amount', 
+                              title='Quantity vs. Total Amount', key='qty_amount')
+        
+        with col2:
+            st.markdown("#### Daily Sales Trend")
+            create_seaborn_plot('line', df, 'Date', 'Total Amount',
+                              title='Daily Sales', key='daily_sales')
+        
+        st.markdown("#### Product Category vs. Total Amount")
+        create_seaborn_plot('box', df, 'Product Category', 'Total Amount',
+                          title='Transaction Amount vs. Product Category', key='cat_amount')
+    
+    with tab3:
+        st.subheader("Product Analysis")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("#### Quantity by Product Category")
+            create_seaborn_plot('box', df, 'Product Category', 'Quantity',
+                              title='Quantity vs. Product Category', key='cat_qty')
+        
+        with col2:
+            st.markdown("#### Average Amount by Product Category and Gender")
+            df_grouped = df.groupby(['Product Category', 'Gender'])['Total Amount'].mean().reset_index()
+            create_seaborn_plot('bar', df_grouped, 'Product Category', 'Total Amount', 'Gender',
+                              title='Product Category vs. Average Total Amount by Gender', 
+                              key='cat_gender_amount')
+        
+        # Gender vs Product Category Heatmap
+        st.markdown("#### Gender vs Product Category Distribution")
+        df_2dhist = pd.DataFrame({
+            x_label: grp['Product Category'].value_counts()
+            for x_label, grp in df.groupby('Gender')
+        })
+
+        # Define the create_heatmap function
+        def create_heatmap(data, title, key):
+            plt.figure(figsize=(10, 6))
+            sns.heatmap(data, annot=True, fmt='d', cmap='YlGnBu')
+            plt.title(title)
+            st.pyplot(plt)
+            plt.close()
+
+        create_heatmap(df_2dhist, 'Gender vs Product Category Distribution', 'gender_product')
+    
+    with tab4:
+        st.subheader("Customer Analysis")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("#### Age vs. Total Amount by Gender")
+            create_seaborn_plot('scatter', df, 'Age', 'Total Amount', 'Gender',
+                              title='Age vs. Total Amount by Gender', key='age_amount_gender')
+        
+        with col2:
+            st.markdown("#### Age vs. Total Amount by Product Category")
+            create_seaborn_plot('scatter', df, 'Age', 'Total Amount', 'Product Category',
+                              title='Age vs. Total Amount by Product Category', 
+                              key='age_amount_category')
+        
+        # Product Category vs Age Distribution
+        st.markdown("#### Product Category vs. Age Distribution")
+        create_seaborn_plot('violin', df, 'Age', 'Product Category',
+                          title='Age Distribution by Product Category', key='cat_age_dist')
+
+
+################################################################
 # Data Cleaning Page
+
+################################################################
 elif st.session_state.page_selection == "data_cleaning":
     st.header("🧼 Data Cleaning and Data Pre-processing")
 
