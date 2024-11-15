@@ -164,7 +164,7 @@ elif st.session_state.page_selection == "dataset":
 
     st.write("Retails Dataset")
     st.markdown("""
-
+####
   The retails sales dataset focuses on simulating a dynamic retail environment such that it will have an in-depth analysis of customers behavior and its essential attributes such as customer’s interaction and retail operations. Data-Driven Retail Insights: Leveraging Machine Learning for Customer Understanding and Business Optimization
 
     **Content**  
