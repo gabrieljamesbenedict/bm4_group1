@@ -141,16 +141,16 @@ def bar_plot(df, column, width, height, key):
 
 # About Page
 if st.session_state.page_selection == "about":
-    st.header (" 𝓲 About")
-    st.markdown(""" 
+   st.header (" 𝓲 About")
+   st.markdown(""" 
 
     The Retail Sales Dataset is a synthetic dataset that simulates a realistic retail environment, which enables a deep dive into sales patterns and customer profiles. The dataset was originally made using the Numpy library, published in Kaggle, and owned by Mohammad Talib under a Public Domain license. 
                 
     #### Pages
     1. `Dataset` - Contains the description of the dataset used in this project.
-    2. `EDA` - Exploratory Data Analysis of the Retails dataset. Highlighting the three product category (e.g., Beauty, Clothing, Electronics) for targeted marketing campaigns and customer segmentation.
+    2. `EDA` - Exploratory Data Analysis of the Retails dataset. Highlighting the three product categories (e.g., Beauty, Clothing, Electronics) for targeted marketing campaigns, customer’s behavior, and customer’s segmentation .
     3. `Data Cleaning / Pre-processing` - Data cleaning and pre-processing steps such as encoding the species column and splitting the dataset into training and testing sets. Includes graphs such as Pie Chart, Bar Chart, Scatter Plot, Box Plot, Bar Plot, Histogram, Heatmap, Violin Plot, and Line Plot. 
-    4. `Machine Learning` - Training one supervised model, the Random Forest Regressor, and training one unsupervised model, the KMeans clustering. This includes Supervised and Unsupervised Model evaluation, feature importance and segmentation.
+    4. `Machine Learning` - There are a total of 5 models, which focuses on supervised and unsupervised models. Whereas, supervised model trains the Random Forest Regressor, and Linear Regression. While an unsupervised model uses KMeans Clustering.
     5. `Prediction` - It predicts on the Total Amount based on other features, Product Category based on customer's demographic and their transaction details, and classifying customers by using customer segmentation using the two trained models.
     6. `Conclusion` - Summary of the insights and observations from the EDA and model training.
 
