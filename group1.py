@@ -895,21 +895,13 @@ elif st.session_state.page_selection == "prediction":
     ypred = model.predict(xtest)
 
 
-    # Prediction Function for Streamlit or Direct Input
+   
     def make_sales_prediction(product_category, quantity, price_per_unit):
-        # Encode the product category input
         category_encoded = le.transform([product_category])[0]
-        
-        # Prepare the input data for prediction
         input_data = np.array([[category_encoded, quantity, price_per_unit]])
-        
-        # Predict using the model
         predicted_sales = model.predict(input_data)
-        
-        # Return the prediction result
         return predicted_sales[0]
 
-    # Streamlit Layout using Columns
     col_pred = st.columns((1.5, 3, 3), gap='medium')
 
     # Initialize session state for clearing results
