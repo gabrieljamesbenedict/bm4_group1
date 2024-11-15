@@ -128,13 +128,13 @@ def bar_plot(df, column, width, height, key):
 
 ######################
 # Importing models
-#supervised_model_filename = joblib.load('assests/models/sales_prediction_model.joblib')
-#unsupervised_model_filename = joblib.load('assests/models/clustering_model.joblib')
-#rf_classifier_filename = joblib.load('assests/models/random_forest_classifier.joblib')
+model = joblib.load('assets/models/sales_prediction_model.joblib')
+kmeans = joblib.load('assets/models/clustering_model.joblib')
+rf_classifier = joblib.load('assets/models/random_forest_classifier.joblib')
 
-## not sure with the features and the list for the mean time
-## features = ['Age', 'Gender_Female', 'Gender_Male', 'AvgTransactionValue', 'ProductCategory_Encoded']
-## species_list = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+features = ['Age', 'Gender', 'Date', 'Customer ID', 'Product Category', 'Quantity', 'Price per Unit', 'Total amount']
+product_category = ['Beauty', 'Electronic', 'Clothing']
+
 ######################
 
 # Pages
@@ -593,7 +593,12 @@ elif st.session_state.page_selection == "data_cleaning":
     sorted_clusters = sorted(range(len(cluster_centers)), key=lambda k: cluster_centers[k][1])  # Sort by CLV centroid
     customer_data['CLV Segment'] = customer_data['Cluster'].map({sorted_clusters[0]: 'Low CLV',
                                                                 sorted_clusters[1]: 'Medium CLV',
+    
                                                                 sorted_clusters[2]: 'High CLV'})
+    
+###############################################################################################
+
+
 
     st.subheader("Train-Test Split")
     
@@ -651,13 +656,243 @@ elif st.session_state.page_selection == "data_cleaning":
 elif st.session_state.page_selection == "machine_learning":
     st.header("🤖 Machine Learning")
 
-    # Your content for the MACHINE LEARNING page goes here
+    st.subheader("Model Evaluation")
+
+    st.write(" **Predicting the “Total Amount” that is based on the other features** ")
+
+    st.code("""
+
+    # Train the models
+    model = LinearRegression()
+    model.fit(xtrain, ytrain)
+
+    # Predict the test set
+    ypred = model.predict(xtest)
+
+    # Calculate accuracy of model
+    accuracy = model.score(xtest, ytest)
+    print("Accuracy:", accuracy)
+                
+    """)
+    st.write("Accuracy: 0.8559361812944614")
+
+    predicted_vs_actual_total_amount = Image.open('assets/graphs [images]/Predicted vs. Actual Total Amount.png')
+    st.image(predicted_vs_actual_total_amount, caption='Predicted vs Actual Total Amount')
+
+    st.markdown(
+        """
+The scatter plot shows how well the model predicts the total amount that clients will spend. The anticipated total amount is displayed on the y-axis, and the actual total amount is represented on the x-axis. To indicate accurate predictions, the points should ideally be in tight alignment with the diagonal line. With an accuracy score of 0.8559, the model appears to be fairly accurate in forecasting consumer spending patterns.
+
+        """
+    )
+
+    st.write("### Classifying Customer segments, using “Age”, “Gender”, “Total Amount”, and “Product Category”, for targeted marketing campaigns. ")
+
+    st.code("""
+
+    rf_classifier = RandomForestClassifier(random_state=42)
+    rf_classifier.fit(X_train, y_train)
+
+    y_pred = rf_classifier.predict(X_test)
+
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Accuracy: {accuracy:.2f}")
+                
+    """)
+
+    distribution_of_customer_segment = Image.open('assets/graphs [images]/Distribution of Customer Segments.png')
+    st.image(distribution_of_customer_segment, caption='Distribution of Customer Segment')
+
+    st.write("Accuracy: 1.00")
+
+
+    st.markdown ("""
+                 The distribution of clients across four different segments is shown in the bar chart that is provided. With a somewhat greater count than the other segments, Segment 2 seems to be the most populated. While Segment 1 has the fewest clients, Segments 0 and 3 have comparable numbers.
+
+With an output of 1.00, the model appears to have determined that Segment 1 is the most important or pertinent segment for the analysis or prediction task at hand. This might suggest that Segment 1 clients display particular traits or behaviors that are especially relevant to the goal of the model.
+                 """)
+    
+    st.markdown(" ### Predicting the “Product Category” that is based on the customer’s demographic and their transaction details")
+ 
+    st.code("""
+
+    # Make predictions on the test set
+    y_pred = rf_classifier.predict(X_test_scaled)
+
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    print("Accuracy:", accuracy)
+                    
+    """)
+
+    confusion_matrix_product_category = Image.open('assets/graphs [images]/Confusion Matrix for Product Category Prediction.png')
+    st.image(confusion_matrix_product_category, caption='Confusion Matrix for Product Category Prediction')
+
+    st.write("Accuracy: 1.0")
+
+    st.markdown ("""
+The confusion matrix illustrates how well the model predicts the appropriate product category. Correct predictions are represented by diagonal elements, but wrong classifications are shown by off-diagonal elements. The model is said to accurately predict the product category for every instance in the test set if its accuracy is 1.00. This shows that the model successfully classifies products by using transaction information and customer demographics.
+                 """)
+    
+    st.markdown(" ### To use the 'Date' feature to predict sales patterns over time")
+    # Convert 'Date' to datetime format
+    df['Date'] = pd.to_datetime(df['Date'])
+
+        # Calculate total sales for each entry
+    df['Total Sales'] = df['Quantity'] * df['Price per Unit']
+
+        # Group by 'Date' to get daily total sales
+    daily_sales = df.groupby('Date')['Total Sales'].sum().reset_index()
+
+        # Plot daily sales with a rolling average
+    plt.figure(figsize=(14, 7))
+    plt.plot(daily_sales['Date'], daily_sales['Total Sales'], label='Daily Sales', alpha=0.5)
+    plt.plot(
+            daily_sales['Date'],
+            daily_sales['Total Sales'].rolling(window=7).mean(),
+            label='7-Day Rolling Average',
+            color='orange',
+            linewidth=2,
+        )
+    plt.xlabel('Date')
+    plt.ylabel('Total Sales')
+    plt.title('Daily Sales with 7-Day Rolling Average')
+    plt.legend()
+    st.pyplot(plt)
+
+    
+    st.code("""
+
+    # Make predictions on the test set
+    y_pred = model.predict(X_test_scaled)
+
+    # Evaluate the model (Mean Squared Error)
+    mse = mean_squared_error(y_test, y_pred)
+    print("Mean Squared Error:", mse)
+                        
+    """)
+
+    actual_vs_predicted_image = Image.open('assets/graphs [images]/Actual vs Predicted Sales.png')
+    st.image( actual_vs_predicted_image, caption='Actual vs Predicted Sales')
+
+    st.write("Mean Squared Error: 86550.090760611")
+    st.markdown("""
+The difference between actual and anticipated sales data is shown in the accompanying line plot. The orange line shows the model's anticipated values, and the blue line shows the actual sales data. A considerable disparity between the two is indicated by the high Mean Squared Error (MSE) of 86,550.09, which implies that the model's predictions are not particularly reliable. Numerous factors, including feature engineering, model complexity, data quality, and model selection, may be to blame for this. It is advised to experiment with various models, examine extra features, improve data preparation, and take regularization strategies into consideration in order to enhance the model's performance.
+                """)
+    
+    st.markdown(" ### In order to segment customers according to their demographics and purchase patterns. Uses “Age”, “Total Amount spent”, “Frequency of purchases”, and “Product Category” preferences.")
+
+
+    st.code("""
+
+    # Display the centroid of each cluster to understand the segment characteristics
+    centroids = kmeans.cluster_centers_ * features.std().values + features.mean().values  # Reverse scaling
+    centroid_df = pd.DataFrame(centroids, columns=features.columns)
+    print("Centroids of each customer segment:\n", centroid_df)
+                        
+    """)
+
+    customer_segmentation_demographic = Image.open('assets/graphs [images]/Customer Segmentation based on Demographics and Purchase Patterns.png')
+    st.image(customer_segmentation_demographic, caption='Customer Segmentation based on Demographics and Purchase Patterns')
+
+    st.write("Centroids of each customer segment:"
+          "Age        Gender  Quantity  Total Sales"
+"0  29.727723  1.000000e+00  2.217822   234.876238"
+"1  38.797386  5.032680e-01  3.673203  1554.248366"
+"2  41.764151 -1.498801e-15  2.344340   266.155660"
+"3  53.495192  1.000000e+00  2.302885   264.206731")
+    st.markdown (""" 
+The link between the number of clusters and the associated Sum of Squared Errors (SSE) is depicted in the Elbow Method figure. A graph's **"elbow point"** indicates the ideal amount of clusters, where the pace at which SSE decreases starts to level out. The elbow point in this instance seems to be approximately four segments. Four different client categories have been discovered by the clustering analysis based on the following factors: **age, gender, quantity purchased, and total sales.**
+
+`Segment 1:`  Younger customers with moderate spending.
+
+`Segment 2: ` Middle-aged customers with higher spending.
+
+`Segment 3:`  Older customers with moderate spending.
+
+`Segment 4: ` Older male customers with moderate spending.
+
+Businesses can boost customer satisfaction and sales by customizing their product offerings and marketing strategies to target particular consumer groups by having a thorough grasp of these segments. For instance, **Segment 3** can be supplied expensive products, whereas **Segment 1** might be targeted with promotions for younger consumers.
+                """)
+
+    st.markdown(" ### Identify high-, medium-, and low-spending customer clusters based on their age and money spent.")
+
+    st.code("""
+
+    # Map cluster labels to high, medium, and low CLV based on cluster centroids
+    cluster_centers = kmeans.cluster_centers_
+    cluster_labels = ['Low CLV', 'Medium CLV', 'High CLV']
+    sorted_clusters = sorted(range(len(cluster_centers)), key=lambda k: cluster_centers[k][1])  # Sort by CLV centroid
+    customer_data['CLV Segment'] = customer_data['Cluster'].map({sorted_clusters[0]: 'Low CLV',
+                                                             sorted_clusters[1]: 'Medium CLV',
+                                                             sorted_clusters[2]: 'High CLV'})
+            
+    # Display the resulting clusters
+    print("Customer CLV Segmentation Results:")
+    print(customer_data[['Customer ID', 'Age', 'CLV', 'CLV Segment']].head())
+                        
+    """)
+
+    st.write("Customer CLV Segmentation Results:"
+  "Customer ID       Age       CLV CLV Segment"
+"0     CUST001 -0.534352 -0.550362     Low CLV"
+"1     CUST002 -1.118896  0.963495    High CLV"
+"2     CUST003  0.634737 -0.764083  Medium CLV"
+"3     CUST004 -0.315148  0.072991     Low CLV"
+"4     CUST005 -0.826624 -0.639412     Low CLV")
+    
+    customer_segmentation_clv = Image.open('assets/graphs [images]/Customer Segmentation Based on CLV and Age.png')
+    st.image(customer_segmentation_clv, caption='Customer Segmentation Based on CLV and Age.png')
+    
+    st.markdown ("""
+The scatter plot shows how customers are divided into groups according to their age and Customer Lifetime Value (CLV). Three separate clusters—Low CLV, High CLV, and Medium CLV—have been discovered by the model. This segmentation offers important information on consumer purchasing and behavior. Customers in the High CLV category, for example, are typically older and have a history of spending more money. Businesses can optimize customer value and retention by customizing their product offers and marketing methods by comprehending these segments.
+                 """)
 
 # Prediction Page
 elif st.session_state.page_selection == "prediction":
     st.header("👀 Prediction")
 
-    # Your content for the PREDICTION page goes here
+    col_pred = st.columns((1.5, 3, 3), gap='medium')
+
+    # Initialize session state for clearing results
+    if 'clear' not in st.session_state:
+        st.session_state.clear = False
+
+    with col_pred[0]:
+        with st.expander('Options', expanded=True):
+            show_dataset = st.checkbox('Show Dataset')
+            show_classes = st.checkbox('Show All Classes')
+            show_beauty = st.checkbox('Show Beauty')
+            show_electronic = st.checkbox('Show Electronic')
+            show_clothing = st.checkbox('Show Clothing')
+
+            clear_results = st.button('Clear Results', key='clear_results')
+
+            if clear_results:
+
+                st.session_state.clear = True
+
+    with col_pred[1]:
+        st.markdown("#### 🌲 Decision Tree Classifier")
+        
+        # Input boxes for the features
+        rf_Age = st.number_input('Age', min_value=0.0, max_value=10.0, step=0.1, key='dt_Age', value=0.0 if st.session_state.clear else st.session_state.get('dt_Age', 0.0))
+        rf_Gender = st.number_input('Sepal Width', min_value=0.0, max_value=10.0, step=0.1, key='dt_Gender', value=0.0 if st.session_state.clear else st.session_state.get('dt_Gender', 0.0))
+        #dt_petal_width = st.number_input('Petal Width', min_value=0.0, max_value=10.0, step=0.1, key='dt_petal_width', value=0.0 if st.session_state.clear else st.session_state.get('dt_petal_width', 0.0))
+        #dt_petal_length = st.number_input('Petal Length', min_value=0.0, max_value=10.0, step=0.1, key='dt_petal_length', value=0.0 if st.session_state.clear else st.session_state.get('dt_petal_length', 0.0))
+
+        classes_list = ['Beauty', 'Electronic', 'Clothing']
+        
+        # Button to detect the Iris species
+        if st.button('Detect', key='dt_detect'):
+            # Prepare the input data for prediction
+            rf_input_data = [[rf_Age, rf_Gender]]
+            
+            # Predict the Iris species
+            rf_prediction = rf_classifier.predict(rf_input_data)
+            
+            # Display the prediction result
+            st.markdown(f'The predicted Iris species is: `{classes_list[rf_prediction[0]]}`')
 
 # Conclusions Page
 elif st.session_state.page_selection == "conclusion":
