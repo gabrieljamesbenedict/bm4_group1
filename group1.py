@@ -353,7 +353,7 @@ elif st.session_state.page_selection == "data_cleaning":
 
     st.markdown("""
 
-    Description
+     Each row represents a transaction, with columns showing the transaction ID, date, customer ID, gender, age, product category, quantity purchased, price per unit, and total amount spent.
          
     """)
 
@@ -368,7 +368,7 @@ elif st.session_state.page_selection == "data_cleaning":
 
     st.markdown("""
 
-    Description
+    It shows that there are no missing values in the given dataset therefore, will proceed with data pre-processing.
          
     """)
 
@@ -383,20 +383,7 @@ elif st.session_state.page_selection == "data_cleaning":
 
     st.markdown("""
 
-    [Description]
-         
-    """)
-
-
-    # Predicting the “Total Amount” that is based on the other features
-    xdata = df[['product_category_encoded', 'Quantity', 'Price per Unit']]
-    ydata = df['Total Amount']
-
-    st.dataframe(df.head(), use_container_width=True, hide_index=True)
-
-    st.markdown("""
-
-    [Description]
+    Each row represents a transaction, with columns showing the transaction ID, date, customer ID, gender, age, product category, quantity purchased, price per unit, total amount spent, and product_category_encoded."
          
     """)
 
@@ -461,7 +448,7 @@ elif st.session_state.page_selection == "data_cleaning":
 
     st.markdown("""
 
-    [Description]
+     It selects relevant features like age, gender, average transaction value, and product categories. These features will be used to predict the customer segment. By encoding categorical variables and separating features from the target variable, the code sets the stage for model training and prediction.
          
     """)
     ######################################################################################
@@ -485,7 +472,7 @@ elif st.session_state.page_selection == "data_cleaning":
 
     st.markdown("""
 
-    [Description]
+    It divides the data into a target variable (y) and features (X). Age, average transaction amount, and encoded product categories are among the features. The model will forecast "Product Category," the goal variable. This kind of data separation enables the model to identify patterns in the features and generate precise product category predictions.
          
     """)
 
@@ -551,10 +538,6 @@ elif st.session_state.page_selection == "data_cleaning":
     # Standardize features using numpy (alternative to StandardScaler)
     scaled_features = (features - features.mean()) / features.std()
 
-    # Display the processed DataFrame in Streamlit
-    st.write("Data after Feature Engineering and Encoding:")
-    st.dataframe(df)
-
     # Finding the optimal number of clusters using the Elbow Method
     sse = []
     K_range = range(1, 11)
@@ -562,12 +545,6 @@ elif st.session_state.page_selection == "data_cleaning":
         kmeans = KMeans(n_clusters=k, random_state=42)
         kmeans.fit(scaled_features)
         sse.append(kmeans.inertia_)
-
-
-
-    st.markdown ("""
-    [Description]
-    """)
 
     # Identify high-, medium-, and low-spending customer clusters based on their age and money spent.
     # Aggregate 'Total Amount' by 'Customer ID' to find overall spending per customer
@@ -628,11 +605,11 @@ elif st.session_state.page_selection == "data_cleaning":
     st.subheader("y_test")
     st.dataframe(y_test, use_container_width=True, hide_index=True)
 
-    st.markdown("[Description]")
+    st.markdown("The dataset is separated into two sections: a testing set and a training set. A machine learning model is trained using the training set, and its evaluation is done using the testing set and it is how efficiently the model works with unknown data. We make sure the model can learn from a variety of examples and generalize to new, unseen data by dividing the data. ")
     
     st.subheader ("Visualization for Unsupervised Model")
 
-    # Plot the Elbow Method
+    st.markdown (" ## Plot the Elbow Method")
     st.write("Elbow Method for Optimal K")
     plt.figure(figsize=(8, 6))
     plt.plot(K_range, sse, marker='o')
@@ -641,7 +618,7 @@ elif st.session_state.page_selection == "data_cleaning":
     plt.title("Elbow Method to Determine Optimal K")
     st.pyplot(plt)
 
-    # Visualize the clusters
+    st.markdown (" ## Visualize the clusters ") 
     plt.figure(figsize=(10, 6))
     sns.scatterplot(data=customer_data, x='Age', y='CLV', hue='CLV Segment', palette='coolwarm', s=100)
     plt.title('Customer Segmentation Based on CLV and Age')
@@ -852,48 +829,83 @@ The scatter plot shows how customers are divided into groups according to their 
 elif st.session_state.page_selection == "prediction":
     st.header("👀 Prediction")
 
+    le = LabelEncoder()
+    df['Product Category Encoded'] = le.fit_transform(df['Product Category'])
+    xdata = df[['Product Category Encoded', 'Quantity', 'Price per Unit']]
+    ydata = df['Total Amount']
+
+    # Split dataset
+    xtrain, xtest, ytrain, ytest = train_test_split(xdata, ydata, test_size=0.3, random_state=42)
+
+    # Train the models
+    model = LinearRegression()
+    model.fit(xtrain, ytrain)
+
+    # Predict the test set
+    ypred = model.predict(xtest)
+
+
+    # Prediction Function for Streamlit or Direct Input
+    def make_sales_prediction(product_category, quantity, price_per_unit):
+        # Encode the product category input
+        category_encoded = le.transform([product_category])[0]
+        
+        # Prepare the input data for prediction
+        input_data = np.array([[category_encoded, quantity, price_per_unit]])
+        
+        # Predict using the model
+        predicted_sales = model.predict(input_data)
+        
+        # Return the prediction result
+        return predicted_sales[0]
+
+    # Streamlit Layout using Columns
     col_pred = st.columns((1.5, 3, 3), gap='medium')
 
     # Initialize session state for clearing results
     if 'clear' not in st.session_state:
         st.session_state.clear = False
+    # Streamlit UI Layout
+    col_pred = st.columns((1.5, 3, 3), gap='medium')
 
     with col_pred[0]:
         with st.expander('Options', expanded=True):
-            show_dataset = st.checkbox('Show Dataset')
-            show_classes = st.checkbox('Show All Classes')
-            show_beauty = st.checkbox('Show Beauty')
-            show_electronic = st.checkbox('Show Electronic')
-            show_clothing = st.checkbox('Show Clothing')
-
+            model_selection = st.radio(
+                "Select Prediction Type",
+                ["Predict Sales"],
+                key="model_selection"
+            )
             clear_results = st.button('Clear Results', key='clear_results')
-
             if clear_results:
-
                 st.session_state.clear = True
 
     with col_pred[1]:
-        st.markdown("#### 🌲 Decision Tree Classifier")
-        
-        # Input boxes for the features
-        rf_Age = st.number_input('Age', min_value=0.0, max_value=10.0, step=0.1, key='dt_Age', value=0.0 if st.session_state.clear else st.session_state.get('dt_Age', 0.0))
-        rf_Gender = st.number_input('Sepal Width', min_value=0.0, max_value=10.0, step=0.1, key='dt_Gender', value=0.0 if st.session_state.clear else st.session_state.get('dt_Gender', 0.0))
-        #dt_petal_width = st.number_input('Petal Width', min_value=0.0, max_value=10.0, step=0.1, key='dt_petal_width', value=0.0 if st.session_state.clear else st.session_state.get('dt_petal_width', 0.0))
-        #dt_petal_length = st.number_input('Petal Length', min_value=0.0, max_value=10.0, step=0.1, key='dt_petal_length', value=0.0 if st.session_state.clear else st.session_state.get('dt_petal_length', 0.0))
+        if model_selection == "Predict Sales":
+            st.markdown("#### 📈 Sales Prediction")
 
-        classes_list = ['Beauty', 'Electronic', 'Clothing']
-        
-        # Button to detect the Iris species
-        if st.button('Detect', key='dt_detect'):
-            # Prepare the input data for prediction
-            rf_input_data = [[rf_Age, rf_Gender]]
-            
-            # Predict the Iris species
-            rf_prediction = rf_classifier.predict(rf_input_data)
-            
-            # Display the prediction result
-            st.markdown(f'The predicted Iris species is: `{classes_list[rf_prediction[0]]}`')
+               # User inputs for Sales Prediction
+            product_category = st.selectbox("Product Category", options=le.classes_, key="sales_product_category")
+            quantity = st.number_input("Quantity", min_value=1, max_value=1000, step=1, key="sales_quantity")
+            price_per_unit = st.number_input("Price per Unit", min_value=0.1, max_value=1000.0, step=0.1, key="sales_price_per_unit")
 
+            # Make prediction when button is pressed
+            if st.button("Predict Sales", key="predict_sales_button"):
+                predicted_sales = make_sales_prediction(product_category, quantity, price_per_unit)
+                st.write(f"Predicted Total Amount: **${predicted_sales:,.2f}**")
+
+    with col_pred[2]:
+        if model_selection == "Predict Sales":
+            st.markdown("#### 📊 Predicted vs Actual (Test Set)")
+            ypred = model.predict(xtest)
+
+            plt.figure(figsize=(10, 6))
+            plt.scatter(ytest, ypred, color='lightblue', label='Predicted')
+            plt.scatter(ytest, ytest, color='salmon', alpha=0.5, label='Actual')
+            plt.xlabel('Actual Total Amount')
+            plt.ylabel('Predicted Total Amount')
+            plt.title('Predicted vs. Actual Total Amount')
+            plt.legend()
+            st.pyplot(plt)
 # Conclusions Page
 elif st.session_state.page_selection == "conclusion":
     st.header("📝 Conclusion")
