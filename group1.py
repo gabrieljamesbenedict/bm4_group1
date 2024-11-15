@@ -254,11 +254,13 @@ elif st.session_state.page_selection == "eda":
         "Product Analysis",
         "Customer Analysis"
     ])
-    
+    #########
+    #TAB 1
+    ######### 
     with tab1:
         st.subheader("Basic Distributions")
         
-        # Original visualizations
+        
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown('#### Product Category Distribution')
@@ -269,7 +271,12 @@ elif st.session_state.page_selection == "eda":
         with col3:
             st.markdown('#### Age Distribution')
             bar_plot(df, "Age", 400, 300, 3)
+
+        st.markdown("Based from gender distribution and product category distribution bar graphs, there are more females than males while on the product category bar chart, the highest is the Electronics, followed by Clothing and Beauty. Meanwhile, by computing the summary statistics for the age column, we see the age distribution of our customer's base. This information can then be used to customize marketing campaigns.")
     
+    #########
+    #TAB 2
+    #########
     with tab2:
         st.subheader("Sales Analysis")
         
@@ -278,16 +285,31 @@ elif st.session_state.page_selection == "eda":
             st.markdown("#### Quantity vs. Total Amount")
             create_seaborn_plot('scatter', df, 'Quantity', 'Total Amount', 
                               title='Quantity vs. Total Amount', key='qty_amount')
+            st.markdown("""
+            Based on the Quantity vs. Total Amount graph, there are distinct clusters of purchases at specific quantities that are displaying common buying habits of customers. Moreover, factors such as customer preferences and product pricing plays a significant role in determining the total amount spent.
+
+            """)
         
         with col2:
             st.markdown("#### Daily Sales Trend")
             create_seaborn_plot('line', df, 'Date', 'Total Amount',
                               title='Daily Sales', key='daily_sales')
+            
+            st.markdown("""
+
+The Daily Sales trend, with values ranging from 0 to well over 2000, illustrates a notable variation in daily sales amounts throughout time. There are observable sales spikes on a number of days, suggesting that there might be times when demand is very strong or that sales are being driven up by promotions. But the sales data seems to be very uneven and changeable, with regular ups and downs over the course of the period. The dates' dense clustering along the x-axis indicates that the data covers a wide range of days, which could make it challenging to identify trends for particular time periods. All things considered, the graph shows an erratic sales pattern with sporadic activity peaks.
+            """)
         
         st.markdown("#### Product Category vs. Total Amount")
         create_seaborn_plot('box', df, 'Product Category', 'Total Amount',
                           title='Transaction Amount vs. Product Category', key='cat_amount')
-    
+        st.markdown("""
+                    On the graph, the box plot shows that although consumers spend similar amounts on average for all product categories, there are large differences in the distribution of spending. While beauty and clothing show more steady buying patterns, electronics show a wider variety of spending, including a few high-value purchases. This implies that spending behavior is influenced by variables other than product category, such pricing or particular client preferences.
+                    """)
+
+    #########
+    #TAB 3
+    #########
     with tab3:
         st.subheader("Product Analysis")
         
@@ -296,6 +318,10 @@ elif st.session_state.page_selection == "eda":
             st.markdown("#### Quantity by Product Category")
             create_seaborn_plot('box', df, 'Product Category', 'Quantity',
                               title='Quantity vs. Product Category', key='cat_qty')
+            st.markdown("""
+                    Based on the box plot, it demonstrates that consumers typically buy more electronics than apparel or cosmetics. The range of numbers for electronics is broader, suggesting that some larger quantity purchases are made in this area, even if the median quantity is similar across all categories. There are fewer outliers in the buying volumes of apparel and cosmetics.
+
+                        """)
         
         with col2:
             st.markdown("#### Average Amount by Product Category and Gender")
@@ -303,6 +329,9 @@ elif st.session_state.page_selection == "eda":
             create_seaborn_plot('bar', df_grouped, 'Product Category', 'Total Amount', 'Gender',
                               title='Product Category vs. Average Total Amount by Gender', 
                               key='cat_gender_amount')
+            st.markdown("""
+                        The bar plot demonstrates that the amounts spent by men and women on electronics and clothes are comparable. However, compared to men, women typically spend a little more on cosmetics. This implies that spending habits are somewhat influenced by gender, especially when it comes to the beauty area.
+                        """)
         
         # Gender vs Product Category Heatmap
         st.markdown("#### Gender vs Product Category Distribution")
@@ -311,7 +340,7 @@ elif st.session_state.page_selection == "eda":
             for x_label, grp in df.groupby('Gender')
         })
 
-        # Define the create_heatmap function
+        # function to creatte the heatmap
         def create_heatmap(data, title, key):
             plt.figure(figsize=(10, 6))
             sns.heatmap(data, annot=True, fmt='d', cmap='YlGnBu')
@@ -320,7 +349,15 @@ elif st.session_state.page_selection == "eda":
             plt.close()
 
         create_heatmap(df_2dhist, 'Gender vs Product Category Distribution', 'gender_product')
-    
+
+        st.markdown("""
+                    Based on the graph, it demonstrates that while men and women buy technology and clothes at comparable rates, women buy beauty goods more often than men.
+
+                    """)
+
+    #########
+    #TAB 4
+    #########  
     with tab4:
         st.subheader("Customer Analysis")
         
@@ -329,17 +366,30 @@ elif st.session_state.page_selection == "eda":
             st.markdown("#### Age vs. Total Amount by Gender")
             create_seaborn_plot('scatter', df, 'Age', 'Total Amount', 'Gender',
                               title='Age vs. Total Amount by Gender', key='age_amount_gender')
+            st.markdown("""
+                        Based on the graph, it demonstrates that, when taking gender into account, there is no discernible correlation between age and overall spending. Although there are some minor disparities in the spending habits of the various age groups, gender does not seem to have a major impact on these variances. This implies that spending patterns vary greatly among men and women of all ages.
+
+                        """)
         
         with col2:
             st.markdown("#### Age vs. Total Amount by Product Category")
             create_seaborn_plot('scatter', df, 'Age', 'Total Amount', 'Product Category',
                               title='Age vs. Total Amount by Product Category', 
                               key='age_amount_category')
+            
+            st.markdown("""
+
+                        The scatter plot demonstrates that while consumers of all ages buy cosmetic items, younger consumers are more likely to buy electronics and apparel. Customers in their late 20s and early 30s, in particular, typically spend more on electronics and apparel. This implies that younger demographics may be the target market for these product categories.
+                        
+                        """)
         
         # Product Category vs Age Distribution
         st.markdown("#### Product Category vs. Age Distribution")
         create_seaborn_plot('violin', df, 'Age', 'Product Category',
                           title='Age Distribution by Product Category', key='cat_age_dist')
+        st.markdown("""
+                    The violin plot demonstrates that while beauty goods are purchased by consumers of all ages, the younger age groups are more likely to purchase apparel and electronics. This implies that while apparel and electronics are more enticing to younger consumers, beauty goods are more popular with a wider spectrum of ages.
+                    """)
 
 
 ################################################################
